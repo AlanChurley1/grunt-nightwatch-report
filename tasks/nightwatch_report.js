@@ -182,6 +182,47 @@ function writeTemplatedSummaryReports(summary, outputDir, grunt) {
     return indexHtmlPath;
 }
 
+
+function writeTextSummaryReports(summary, outputDir, grunt) {
+    if (!summary)
+        return;
+    if (!outputDir)
+        return;
+    if (!grunt)
+        return;
+    var textBody = 'Test Results\n' +
+        'Total Tests Run: ' + summary.numTests + '\n' +
+        'Total Tests Failed: ' + summary.numFailures + '\n';
+
+    var currentSuite;
+    var currentCase;
+    var currentSuiteFailures = 0;
+    if ( summary.numFailures > 0 && summary.numTests > 0) {
+        for (var x=0; x < summary.suites.length; x++) {
+            currentSuite = summary.suites[x];
+            if (currentSuite.numFailures > 0) {
+                textBody = textBody + '*' + currentSuite.name + '*\n';
+                for (var y = 0; y < currentSuite.cases.length; y++) {
+                    currentCase = currentSuite.cases[y];
+                    if (currentCase.numFailures > 0) {
+                        textBody = textBody + '> ' + currentCase.name + '*\n';
+                        for (var z = 0; z < currentCase.failures.length; z++) {
+                            textBody = textBody + '>> ---`' + currentCase.failures[z].details + '`\n';
+                        }
+                    }
+                }
+            }
+            currentSuiteFailures = 0;
+        }
+    }
+
+    var textSummaryPath = outputDir + "/summary.txt";
+
+    fs.writeFileSync(textSummaryPath, textBody);
+    return textSummaryPath;
+}
+
+
 module.exports = function(grunt) {
 
 // Please see the Grunt documentation for more information regarding task
@@ -333,6 +374,14 @@ module.exports = function(grunt) {
             return;
         } else {
             grunt.log.writeln("Summary HTML report has been generated and written to '" + indexFile + "'");
+        }
+
+        var textFile = writeTextSummaryReports(summary, summaryDirPath, grunt);
+        if (!textFile || !fs.existsSync(textFile)) {
+            grunt.log.error("Unable to generate summary text report files.");
+            return;
+        } else {
+            grunt.log.writeln("Summary text report has been generated and written to '" + textFile + "'");
         }
     });
 
