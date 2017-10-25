@@ -198,14 +198,17 @@ function writeTextSummaryReports(summary, outputDir, grunt) {
     var currentCase;
     var currentSuiteFailures = 0;
     if ( summary.numFailures > 0 && summary.numTests > 0) {
+        summary.suites = summary.suites || [];
         for (var x=0; x < summary.suites.length; x++) {
             currentSuite = summary.suites[x];
             if (currentSuite.numFailures > 0) {
                 textBody = textBody + '*' + currentSuite.name + '*\n';
+                currentSuite.cases = currentSuite.cases || [];
                 for (var y = 0; y < currentSuite.cases.length; y++) {
                     currentCase = currentSuite.cases[y];
                     if (currentCase.numFailures > 0) {
                         textBody = textBody + '> ' + currentCase.name + '*\n';
+                        currentCase.failures = currentCase.failures || [];
                         for (var z = 0; z < currentCase.failures.length; z++) {
                             textBody = textBody + '>> ---`' + currentCase.failures[z].details + '`\n';
                         }
